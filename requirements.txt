@@ -1,0 +1,8 @@
+flask
+crewai
+openai
+yfinance
+pandas
+numpy
+python-dotenv
+ta
