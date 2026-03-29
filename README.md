@@ -4,7 +4,11 @@
 
 *****NOTE*****
 We have not added config.py and .env file as it contains api's
-*****NOTE*****
+in config.py and .env you have to generate apis from below sites and then you paste it there and run the project
+
+1st link -> https://openrouter.ai/workspaces/default/keys
+2nd link -> https://newsapi.org/
+*****NOTE ends*****
 
 This project is an **AI-powered Investment Intelligence Platform** built for the **ET AI Hackathon 2026**.
 
