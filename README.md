@@ -2,6 +2,10 @@
 
 ## 📌 Overview
 
+*****NOTE*****
+We have not added config.py and .env file as it contains api's
+*****NOTE*****
+
 This project is an **AI-powered Investment Intelligence Platform** built for the **ET AI Hackathon 2026**.
 
 It transforms raw stock market data into **actionable insights** using a **multi-agent AI system**, helping retail investors make smarter financial decisions.
