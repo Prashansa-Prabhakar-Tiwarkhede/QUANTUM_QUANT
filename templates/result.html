@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quantum Oracle | AI Financial Advisor</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = { darkMode: 'class', theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'], mono: ['JetBrains Mono', 'monospace'] } } } }
+        if (localStorage.getItem('theme') === 'light' || (!('theme' in localStorage) && !window.matchMedia('(prefers-color-scheme: dark)').matches)) { document.documentElement.classList.remove('dark') } else { document.documentElement.classList.add('dark') }
+    </script>
+    <style>
+    .glass-panel { 
+        backdrop-filter: blur(24px); 
+        -webkit-backdrop-filter: blur(24px); 
+        transition: all 0.4s ease; 
+    }
+
+    .glass-panel:hover {
+        transform: translateY(-2px);
+    }
+
+    ::-webkit-scrollbar { 
+        width: 4px; 
+    }
+
+    ::-webkit-scrollbar-thumb { 
+        background: #cbd5e1; 
+        border-radius: 4px; 
+        transition: background 0.3s ease;
+    }
+
+    .dark ::-webkit-scrollbar-thumb { 
+        background: #334155; 
+    }
+
+    .chat-bubble { 
+        animation: fadeIn 0.35s ease-out forwards; 
+    }
+
+    @keyframes fadeIn { 
+        from { opacity: 0; transform: translateY(12px) scale(0.98); } 
+        to { opacity: 1; transform: translateY(0) scale(1); } 
+    }
+
+    input {
+        transition: all 0.25s ease;
+    }
+
+    input:focus {
+        outline: none;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 1px rgba(59,130,246,0.5), 0 0 10px rgba(59,130,246,0.2);
+        transform: scale(1.01);
+    }
+
+    button {
+        transition: all 0.25s ease;
+    }
+
+    button:active {
+        transform: scale(0.96);
+    }
+
+    button:hover {
+        filter: brightness(1.05);
+    }
+
+    #chat-box {
+        scroll-behavior: smooth;
+    }
+
+    #chat-box > div {
+        transition: transform 0.2s ease;
+    }
+
+    #chat-box > div:hover {
+        transform: translateX(2px);
+    }
+
+    .typing-dot {
+        animation: bounce 1.2s infinite;
+    }
+
+    .typing-dot:nth-child(2) {
+        animation-delay: 0.15s;
+    }
+
+    .typing-dot:nth-child(3) {
+        animation-delay: 0.3s;
+    }
+
+    @keyframes bounce {
+        0%, 80%, 100% { transform: scale(0.8); opacity: 0.6; }
+        40% { transform: scale(1); opacity: 1; }
+    }
+</style>
+</head>
+<body class="min-h-screen p-4 md:p-8 bg-slate-50 dark:bg-[#050810] text-slate-900 dark:text-slate-100 relative font-sans transition-colors duration-500 flex justify-center items-center">
+
+    <div class="fixed inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] z-0 pointer-events-none"></div>
+
+    <div class="w-full max-w-3xl glass-panel bg-white/80 dark:bg-slate-900/80 border border-white/40 dark:border-slate-700/50 rounded-3xl shadow-2xl relative z-10 flex flex-col h-[80vh] overflow-hidden">
+        
+        <div class="px-8 py-5 border-b border-slate-200 dark:border-slate-700/50 flex justify-between items-center bg-white/50 dark:bg-slate-900/50">
+            <div class="flex items-center gap-3">
+                <div class="relative flex h-3 w-3"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span><span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span></div>
+                <div>
+                    <h1 class="text-xl font-black tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-emerald-500 dark:from-blue-400 dark:to-emerald-400">QUANTUM ORACLE</h1>
+                    <p class="text-[10px] font-mono text-slate-500 uppercase">Context Sync: Active</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-4">
+                <button onclick="toggleTheme()" class="p-2 rounded-full hover:bg-slate-200 dark:hover:bg-slate-800 transition">
+                    <svg id="theme-icon-sun" class="w-5 h-5 hidden dark:block text-yellow-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4.22 3.22a1 1 0 011.415 0l.708.707a1 1 0 01-1.414 1.414l-.707-.707a1 1 0 010-1.414zM18 10a1 1 0 01-1 1h-1a1 1 0 110-2h1a1 1 0 011 1zM14.22 15.364a1 1 0 010 1.414l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 0zM10 18a1 1 0 01-1-1v-1a1 1 0 112 0v1a1 1 0 01-1 1zm-4.22-3.22a1 1 0 01-1.415 0l-.708-.707a1 1 0 011.414-1.414l.707.707a1 1 0 010 1.414zM2 10a1 1 0 011-1h1a1 1 0 110 2H3a1 1 0 01-1-1zm3.22-6.78a1 1 0 010 1.414l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 0zM10 14a4 4 0 100-8 4 4 0 000 8z" clip-rule="evenodd"></path></svg>
+                    <svg id="theme-icon-moon" class="w-5 h-5 block dark:hidden text-slate-700" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
+                </button>
+                <a href="javascript:history.back()" class="text-xs font-mono border border-slate-300 dark:border-slate-700 px-3 py-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition">BACK TO DASHBOARD</a>
+            </div>
+        </div>
+
+        <div id="chat-box" class="flex-1 overflow-y-auto p-8 space-y-6 flex flex-col">
+            <div class="flex gap-4 chat-bubble">
+                <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-600 to-emerald-500 flex items-center justify-center text-white font-bold text-xs shadow-lg shrink-0">AI</div>
+                <div class="bg-white dark:bg-[#0B0F19] border border-slate-200 dark:border-slate-700 p-4 rounded-2xl rounded-tl-none max-w-[85%] shadow-sm">
+                    <p class="text-sm leading-relaxed text-slate-700 dark:text-slate-300 font-mono">System linked to your session context. You can ask me questions about your income, risk profile, or the stock we just analyzed. How can I assist?</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="p-6 border-t border-slate-200 dark:border-slate-700/50 bg-slate-50 dark:bg-slate-900/80">
+            <form id="chat-form" class="flex gap-3 relative">
+                <input type="text" id="user-input" placeholder="Type your query..." required class="flex-1 bg-white dark:bg-[#050810] border border-slate-300 dark:border-slate-700 rounded-xl px-5 py-4 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 font-mono shadow-inner transition">
+                <button type="submit" class="bg-blue-600 hover:bg-blue-500 text-white px-6 py-4 rounded-xl font-bold transition flex items-center justify-center shadow-[0_0_15px_rgba(37,99,235,0.4)]">
+                    <svg class="w-5 h-5 transform rotate-90" fill="currentColor" viewBox="0 0 20 20"><path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z"></path></svg>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function toggleTheme() { const html = document.documentElement; html.classList.toggle('dark'); localStorage.setItem('theme', html.classList.contains('dark') ? 'dark' : 'light'); }
+
+        const chatBox = document.getElementById("chat-box");
+        const chatForm = document.getElementById("chat-form");
+        const userInput = document.getElementById("user-input");
+
+        function appendMessage(sender, text) {
+            const isUser = sender === "You";
+            const bubble = document.createElement("div");
+            bubble.className = `flex gap-4 chat-bubble w-full ${isUser ? "justify-end" : "justify-start"}`;
+            
+            const avatarHTML = isUser ? "" : `<div class="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-600 to-emerald-500 flex items-center justify-center text-white font-bold text-xs shadow-lg shrink-0">AI</div>`;
+            
+            const userAvatarHTML = isUser ? `<div class="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-white font-bold text-xs shadow-lg shrink-0">U</div>` : "";
+
+            const messageHTML = `
+                <div class="${isUser ? 'bg-blue-600 border-blue-500 text-white rounded-tr-none' : 'bg-white dark:bg-[#0B0F19] border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-tl-none'} border p-4 rounded-2xl max-w-[85%] shadow-sm font-mono text-sm leading-relaxed">
+                    ${text}
+                </div>
+            `;
+
+            bubble.innerHTML = isUser ? messageHTML + userAvatarHTML : avatarHTML + messageHTML;
+            chatBox.appendChild(bubble);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        chatForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const message = userInput.value.trim();
+            if (!message) return;
+
+            appendMessage("You", message);
+            userInput.value = "";
+            userInput.disabled = true;
+
+            // Typing indicator
+            const typingBubble = document.createElement("div");
+            typingBubble.className = "flex gap-4 chat-bubble";
+            typingBubble.innerHTML = `<div class="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-600 to-emerald-500 flex items-center justify-center text-white font-bold text-xs shadow-lg shrink-0">AI</div>
+                                      <div class="bg-white dark:bg-[#0B0F19] border border-slate-200 dark:border-slate-700 p-4 rounded-2xl rounded-tl-none shadow-sm flex items-center gap-1">
+                                          <div class="w-2 h-2 bg-slate-400 rounded-full animate-bounce"></div>
+                                          <div class="w-2 h-2 bg-slate-400 rounded-full animate-bounce delay-100"></div>
+                                          <div class="w-2 h-2 bg-slate-400 rounded-full animate-bounce delay-200"></div>
+                                      </div>`;
+            chatBox.appendChild(typingBubble);
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            try {
+                // Calls your teammate's /chat route in app.py
+                const response = await fetch("/chat", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ message: message })
+                });
+                const data = await response.json();
+                
+                chatBox.removeChild(typingBubble);
+                appendMessage("AI", data.reply);
+            } catch (error) {
+                chatBox.removeChild(typingBubble);
+                appendMessage("AI", "Connection error. Ensure the server is running.");
+            } finally {
+                userInput.disabled = false;
+                userInput.focus();
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quantum Compare | Multi-Asset Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = { darkMode: 'class', theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'], mono: ['JetBrains Mono', 'monospace'] }, animation: { 'fade-in-up': 'fadeInUp 0.6s ease-out forwards' }, keyframes: { fadeInUp: { '0%': { opacity: '0', transform: 'translateY(20px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } } } } } }
+        if (localStorage.getItem('theme') === 'light' || (!('theme' in localStorage) && !window.matchMedia('(prefers-color-scheme: dark)').matches)) { document.documentElement.classList.remove('dark') } else { document.documentElement.classList.add('dark') }
+    </script>
+    <style>
+    .glass-panel { 
+        backdrop-filter: blur(24px); 
+        -webkit-backdrop-filter: blur(24px); 
+        background: rgba(255, 255, 255, 0.75);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+    .dark .glass-panel {
+        background: rgba(15, 23, 42, 0.65);
+        border: 1px solid rgba(148, 163, 184, 0.15);
+    }
+
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-thumb { 
+        background: linear-gradient(180deg, #38bdf8, #22c55e); 
+        border-radius: 10px; 
+    }
+    .dark ::-webkit-scrollbar-thumb { 
+        background: linear-gradient(180deg, #1e3a8a, #059669); 
+    }
+
+    /* Enhanced grid background */
+    body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background: radial-gradient(circle at 20% 20%, rgba(56,189,248,0.08), transparent 40%),
+                    radial-gradient(circle at 80% 80%, rgba(34,197,94,0.08), transparent 40%);
+        z-index: 0;
+        pointer-events: none;
+    }
+
+    /* ⚠️ MAGIC CSS */
+    .comparison-output h2 { display: none; }
+
+    .comparison-output img { 
+        width: 100%; 
+        border-radius: 1.2rem; 
+        border: 1px solid rgba(255,255,255,0.15); 
+        margin-bottom: 2rem; 
+        max-width: none !important;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+    }
+
+    .dark .comparison-output img { 
+        mix-blend-mode: screen; 
+        filter: brightness(1.25) contrast(1.15) saturate(1.1); 
+    }
+
+    .comparison-output table { 
+        width: 100% !important; 
+        border-collapse: collapse !important; 
+        border: none !important; 
+        background: linear-gradient(145deg, rgba(15,23,42,0.6), rgba(2,6,23,0.6));
+        border-radius: 1rem; 
+        overflow: hidden;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.25);
+    }
+
+    .comparison-output th { 
+        background: linear-gradient(90deg, rgba(30,41,59,0.9), rgba(15,23,42,0.9));
+        color: #38bdf8; 
+        font-family: 'JetBrains Mono'; 
+        font-size: 0.75rem; 
+        text-transform: uppercase; 
+        letter-spacing: 0.08em; 
+        padding: 1rem; 
+        text-align: left; 
+        border: none !important; 
+        border-bottom: 1px solid rgba(255,255,255,0.15) !important;
+    }
+
+    .comparison-output td { 
+        padding: 1rem; 
+        border: none !important; 
+        border-bottom: 1px solid rgba(255,255,255,0.06) !important; 
+        font-family: 'JetBrains Mono'; 
+        font-size: 0.875rem; 
+        color: #1e293b;
+        transition: all 0.2s ease;
+    }
+
+    .dark .comparison-output td { 
+        color: #e2e8f0; 
+    }
+
+    .comparison-output tr:hover td { 
+        background: linear-gradient(90deg, rgba(56,189,248,0.08), rgba(34,197,94,0.08));
+        transform: scale(1.005);
+    }
+
+    /* Input + Button polish */
+    input {
+        background: linear-gradient(145deg, #ffffff, #f1f5f9);
+        border: 1px solid #cbd5f5;
+        transition: all 0.3s ease;
+    }
+
+    .dark input {
+        background: linear-gradient(145deg, #020617, #0f172a);
+        border: 1px solid #1e293b;
+    }
+
+    input:focus {
+        border-color: #38bdf8;
+        box-shadow: 0 0 0 2px rgba(56,189,248,0.25);
+    }
+
+    button[type="submit"] {
+        background: linear-gradient(135deg, #2563eb, #22c55e);
+        box-shadow: 0 10px 25px rgba(37,99,235,0.3);
+    }
+
+    button[type="submit"]:hover {
+        background: linear-gradient(135deg, #1d4ed8, #16a34a);
+        box-shadow: 0 12px 30px rgba(34,197,94,0.4);
+    }
+</style>
+</head>
+<body class="min-h-screen p-4 md:p-8 bg-slate-50 dark:bg-[#050810] text-slate-900 dark:text-slate-100 relative font-sans transition-colors duration-500">
+
+    <div class="fixed inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] z-0 pointer-events-none"></div>
+
+    <div class="max-w-5xl mx-auto relative z-10">
+        <div class="flex justify-between items-center mb-10 animate-fade-in-up">
+            <div>
+                <h1 class="text-3xl font-black tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-emerald-500 dark:from-blue-500 dark:to-emerald-400">MARKET COMPARISON</h1>
+                <p class="text-xs font-mono text-slate-500 uppercase mt-1">Multi-Asset Correlation</p>
+            </div>
+            <div class="flex items-center gap-4">
+                <button onclick="toggleTheme()" class="p-2.5 rounded-full bg-white dark:bg-slate-800 border shadow-sm hover:scale-110 transition-transform">
+                    <svg id="theme-icon-sun" class="w-5 h-5 hidden dark:block text-yellow-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4.22 3.22a1 1 0 011.415 0l.708.707a1 1 0 01-1.414 1.414l-.707-.707a1 1 0 010-1.414zM18 10a1 1 0 01-1 1h-1a1 1 0 110-2h1a1 1 0 011 1zM14.22 15.364a1 1 0 010 1.414l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 0zM10 18a1 1 0 01-1-1v-1a1 1 0 112 0v1a1 1 0 01-1 1zm-4.22-3.22a1 1 0 01-1.415 0l-.708-.707a1 1 0 011.414-1.414l.707.707a1 1 0 010 1.414zM2 10a1 1 0 011-1h1a1 1 0 110 2H3a1 1 0 01-1-1zm3.22-6.78a1 1 0 010 1.414l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 0zM10 14a4 4 0 100-8 4 4 0 000 8z" clip-rule="evenodd"></path></svg>
+                    <svg id="theme-icon-moon" class="w-5 h-5 block dark:hidden text-slate-700" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
+                </button>
+                <a href="/" class="px-6 py-2.5 font-mono text-sm font-bold text-slate-800 dark:text-white bg-white dark:bg-slate-800 border rounded-lg hover:border-blue-500 shadow-sm transition">&larr; HOME</a>
+            </div>
+        </div>
+
+        <div class="glass-panel bg-white/70 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700/50 rounded-2xl p-6 shadow-xl mb-8 animate-fade-in-up">
+            <form method="POST" action="/compare" id="compare-form" class="flex flex-col md:flex-row gap-4">
+                <div class="flex-1">
+                    <label class="block text-xs font-mono text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider">Target Assets (Comma Separated)</label>
+                    <input type="text" name="stocks" placeholder="e.g. AAPL, MSFT, GOOGL" required class="w-full bg-white dark:bg-[#0B0F19] border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-3.5 text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 font-mono shadow-inner uppercase">
+                </div>
+                <div class="flex items-end">
+                    <button type="submit" class="w-full md:w-auto bg-blue-600 hover:bg-blue-500 text-white font-bold py-3.5 px-8 rounded-xl shadow-lg transition-transform hover:-translate-y-0.5">
+                        RUN COMPARISON
+                    </button>
+                </div>
+            </form>
+            
+            {% if error_message %}
+            <div class="mt-4 p-4 bg-red-100/80 dark:bg-red-900/30 border border-red-300 dark:border-red-800 rounded-lg text-red-600 dark:text-red-400 text-sm font-mono text-center">
+                {{ error_message }}
+            </div>
+            {% endif %}
+        </div>
+
+        {% if comparison_html %}
+        <div id="results-area" class="glass-panel bg-white/70 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700/50 rounded-2xl p-8 shadow-2xl animate-fade-in-up comparison-output" style="animation-delay: 200ms;">
+            {{ comparison_html | safe }}
+        </div>
+        {% endif %}
+    </div>
+
+    <script>
+        function toggleTheme() { const html = document.documentElement; html.classList.toggle('dark'); localStorage.setItem('theme', html.classList.contains('dark') ? 'dark' : 'light'); }
+        
+        document.getElementById('compare-form').addEventListener('submit', function() {
+            const btn = this.querySelector('button[type="submit"]');
+            btn.innerHTML = `<span class="flex items-center gap-2"><div class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> PROCESSING...</span>`;
+            btn.classList.add('opacity-80', 'cursor-not-allowed');
+            if(document.getElementById('results-area')) document.getElementById('results-area').classList.add('opacity-50');
+        });
+    </script>
+</body>
+</html>

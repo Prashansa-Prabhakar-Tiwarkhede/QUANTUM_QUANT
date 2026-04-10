@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analysis Results | Quantum Quant</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.0/vanilla-tilt.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        tailwind.config = { darkMode: 'class', theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'], mono: ['JetBrains Mono', 'monospace'] }, animation: { 'fade-in-up': 'fadeInUp 0.6s ease-out forwards' }, keyframes: { fadeInUp: { '0%': { opacity: '0', transform: 'translateY(30px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } } } } } }
+        if (localStorage.getItem('theme') === 'light' || (!('theme' in localStorage) && !window.matchMedia('(prefers-color-scheme: dark)').matches)) { document.documentElement.classList.remove('dark') } else { document.documentElement.classList.add('dark') }
+    </script>
+    <style>
+    .bento-card { 
+        backdrop-filter: blur(22px); 
+        transform-style: preserve-3d; 
+        background: rgba(255,255,255,0.85);
+        border: 1px solid rgba(255,255,255,0.2);
+        box-shadow: 0 10px 35px rgba(0,0,0,0.15);
+    }
+    .dark .bento-card {
+        background: rgba(15,23,42,0.75);
+        border: 1px solid rgba(148,163,184,0.15);
+        box-shadow: 0 10px 35px rgba(0,0,0,0.5);
+    }
+
+    .verdict-card::before { 
+        content: ""; 
+        position: absolute; 
+        inset: -2px; 
+        border-radius: 1.1rem; 
+        background: linear-gradient(45deg, #3b82f6, #10b981, #6366f1, #22c55e); 
+        background-size: 400% 400%; 
+        z-index: -1; 
+        animation: gradientBorder 5s ease infinite; 
+        opacity: 0.7; 
+        filter: blur(6px);
+    }
+
+    .dark .verdict-card::before { opacity: 0.9; }
+
+    @keyframes gradientBorder { 
+        0% { background-position: 0% 50%; } 
+        50% { background-position: 100% 50%; } 
+        100% { background-position: 0% 50%; } 
+    }
+
+    .pop-out { 
+        transform: translateZ(35px); 
+        transition: transform 0.3s ease;
+    }
+
+    .bento-card:hover .pop-out {
+        transform: translateZ(45px);
+    }
+
+    /* Background glow */
+    body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background: radial-gradient(circle at 10% 20%, rgba(59,130,246,0.08), transparent 40%),
+                    radial-gradient(circle at 90% 80%, rgba(16,185,129,0.08), transparent 40%);
+        z-index: 0;
+        pointer-events: none;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-thumb { 
+        background: linear-gradient(180deg, #3b82f6, #10b981); 
+        border-radius: 10px; 
+    }
+    .dark ::-webkit-scrollbar-thumb { 
+        background: linear-gradient(180deg, #1e40af, #059669); 
+    }
+
+    /* Animation delays */
+    .delay-100 { animation-delay: 100ms; opacity: 0; }
+    .delay-200 { animation-delay: 200ms; opacity: 0; }
+    .delay-300 { animation-delay: 300ms; opacity: 0; }
+
+    /* Chart container glow */
+    canvas {
+        filter: drop-shadow(0 0 12px rgba(59,130,246,0.2));
+    }
+
+    /* Buttons */
+    button, a {
+        transition: all 0.3s ease;
+    }
+
+    button:hover, a:hover {
+        transform: translateY(-2px) scale(1.02);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+    }
+
+    /* Small cards */
+    .bg-slate-50 {
+        background: linear-gradient(145deg, #ffffff, #f1f5f9) !important;
+    }
+    .dark .bg-slate-50 {
+        background: linear-gradient(145deg, #020617, #0f172a) !important;
+    }
+
+    /* Indicator badges */
+    .bg-slate-100 {
+        background: linear-gradient(145deg, #e2e8f0, #f8fafc) !important;
+        border: 1px solid rgba(148,163,184,0.2);
+    }
+    .dark .bg-slate-100 {
+        background: linear-gradient(145deg, #020617, #1e293b) !important;
+    }
+
+    /* Text glow for important numbers */
+    .text-emerald-500, .text-red-500, .text-amber-500 {
+        text-shadow: 0 0 10px currentColor;
+    }
+
+    /* Borders smoother */
+    .border {
+        border-color: rgba(148,163,184,0.25) !important;
+    }
+    .dark .border {
+        border-color: rgba(148,163,184,0.15) !important;
+    }
+</style>
+</head>
+<body class="min-h-screen p-4 md:p-8 bg-slate-50 dark:bg-[#050810] text-slate-900 dark:text-slate-100 relative font-sans transition-colors duration-500">
+
+    <div class="fixed inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] z-0 pointer-events-none"></div>
+
+    <div class="max-w-6xl mx-auto relative z-10">
+        <div class="flex justify-between items-center mb-10 animate-fade-in-up">
+            <div>
+                <h1 class="text-3xl font-black tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-emerald-500 dark:from-blue-500 dark:to-emerald-400">QUANTUM ANALYSIS</h1>
+            </div>
+            
+            <div class="flex items-center gap-4 no-print">
+                
+                <button onclick="downloadPDF()" class="p-2.5 rounded-xl bg-blue-600/20 text-blue-600 dark:text-blue-400 hover:bg-blue-600 hover:text-white border border-blue-500/50 shadow-sm transition-all font-mono text-xs font-bold flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                    EXPORT REPORT
+                </button>
+
+                <button onclick="toggleTheme()" class="p-2.5 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm hover:scale-110 transition-transform">
+                    <svg id="theme-icon-sun" class="w-5 h-5 hidden dark:block text-yellow-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4.22 3.22a1 1 0 011.415 0l.708.707a1 1 0 01-1.414 1.414l-.707-.707a1 1 0 010-1.414zM18 10a1 1 0 01-1 1h-1a1 1 0 110-2h1a1 1 0 011 1zM14.22 15.364a1 1 0 010 1.414l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 0zM10 18a1 1 0 01-1-1v-1a1 1 0 112 0v1a1 1 0 01-1 1zm-4.22-3.22a1 1 0 01-1.415 0l-.708-.707a1 1 0 011.414-1.414l.707.707a1 1 0 010 1.414zM2 10a1 1 0 011-1h1a1 1 0 110 2H3a1 1 0 01-1-1zm3.22-6.78a1 1 0 010 1.414l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 0zM10 14a4 4 0 100-8 4 4 0 000 8z" clip-rule="evenodd"></path></svg>
+                    <svg id="theme-icon-moon" class="w-5 h-5 block dark:hidden text-slate-700" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
+                </button>
+
+                <a href="/" class="px-6 py-2.5 font-mono text-sm font-bold text-slate-800 dark:text-white bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg hover:border-blue-500 shadow-sm">&larr; SYS.REBOOT</a>
+            </div>
+
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+            <div data-tilt data-tilt-max="3" class="verdict-card relative bg-white dark:bg-[#0f172a] rounded-2xl p-6 shadow-xl flex flex-col justify-center items-center text-center animate-fade-in-up delay-100">
+                <div class="pop-out w-full">
+                    <h2 class="text-slate-500 dark:text-slate-400 text-xs font-mono font-bold tracking-widest uppercase mb-2">Engine Verdict</h2>
+                    
+                    {% set decision_color = 'text-slate-600 dark:text-slate-400' %}
+                    {% if data.decision == 'BUY 📈' or data.decision == 'BUY' %} {% set decision_color = 'text-emerald-500 dark:text-emerald-400 drop-shadow-[0_0_15px_rgba(16,185,129,0.3)]' %}
+                    {% elif data.decision == 'SELL 📉' or data.decision == 'SELL' %} {% set decision_color = 'text-red-500 dark:text-red-400 drop-shadow-[0_0_15px_rgba(239,68,68,0.3)]' %}
+                    {% else %} {% set decision_color = 'text-amber-500 dark:text-amber-400 drop-shadow-[0_0_15px_rgba(245,158,11,0.3)]' %}
+                    {% endif %}
+
+                    <div class="text-6xl font-black {{ decision_color }} mb-2 tracking-tighter">{{ data.decision }}</div>
+                    
+                    <div class="mb-6 flex justify-center items-center gap-2">
+                        <span class="text-xs font-mono text-slate-500 uppercase">Model Confidence:</span>
+                        <div class="w-24 h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                            {% set bar_color = 'bg-amber-400' %}
+                            {% if data.confidence > 75 %} {% set bar_color = 'bg-emerald-500' %}
+                            {% elif data.confidence < 40 %} {% set bar_color = 'bg-red-500' %} {% endif %}
+                            <div class="h-full {{ bar_color }}" style="width: {{ data.confidence }}%"></div>
+                        </div>
+                        <span class="text-xs font-bold text-slate-800 dark:text-white">{{ data.confidence }}%</span>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4 w-full">
+                        <div class="bg-slate-50 dark:bg-[#050810]/50 p-4 rounded-xl border border-slate-200 dark:border-slate-700/50">
+                            <p class="text-[10px] text-slate-500 font-mono uppercase tracking-widest">Spot Price</p>
+                            <p class="text-xl font-mono font-bold mt-1">${{ data.current }}</p>
+                        </div>
+                        <div class="bg-slate-50 dark:bg-[#050810]/50 p-4 rounded-xl border border-slate-200 dark:border-slate-700/50">
+                            <p class="text-[10px] text-slate-500 font-mono uppercase tracking-widest">Model Target</p>
+                            <p class="text-xl font-mono font-bold text-blue-600 dark:text-blue-400 mt-1">${{ data.predicted }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div data-tilt data-tilt-max="2" class="bento-card md:col-span-2 bg-white/80 dark:bg-[#0f172a]/80 border rounded-2xl p-6 shadow-xl flex flex-col animate-fade-in-up delay-200">
+                <div class="pop-out h-full flex flex-col">
+                    <div class="flex justify-between items-center mb-4 border-b pb-4 border-slate-200 dark:border-slate-700/50">
+                        <h2 class="text-lg font-bold flex items-center gap-2"><span>🧠</span> Neural Synthesis</h2>
+                        
+                        <div class="flex items-center gap-3">
+                            
+                            <button onclick="executeTrade('{{ session.history[0].stock }}', {{ data.current }})" class="bg-emerald-600 hover:bg-emerald-500 text-white font-mono text-xs font-bold px-4 py-2 rounded-lg shadow-[0_0_10px_rgba(16,185,129,0.3)] transition-all flex items-center gap-2">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                SIMULATE TRADE
+                            </button>
+
+                            <a href="/chat_ui" class="bg-blue-600 hover:bg-blue-500 text-white font-mono text-xs font-bold px-4 py-2 rounded-lg shadow-[0_0_10px_rgba(37,99,235,0.3)] transition-all flex items-center gap-2">
+                                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z" clip-rule="evenodd"></path></svg>
+                                ASK ORACLE
+                            </a>
+                            <span class="bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-400 font-mono text-xs font-bold px-4 py-2 rounded-lg border shadow-sm dark:shadow-none hidden md:block">
+                                ALLOCATION: ${{ data.investment }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="flex gap-4 mb-4 text-xs font-mono">
+                        <div class="bg-slate-100 dark:bg-slate-800/50 px-3 py-2 rounded-lg"><span class="text-slate-500">RSI:</span> <span class="font-bold">{{ data.indicators.RSI }}</span></div>
+                        <div class="bg-slate-100 dark:bg-slate-800/50 px-3 py-2 rounded-lg"><span class="text-slate-500">MACD:</span> <span class="font-bold">{{ data.indicators.MACD }}</span></div>
+                        <div class="bg-slate-100 dark:bg-slate-800/50 px-3 py-2 rounded-lg"><span class="text-slate-500">MA20:</span> <span class="font-bold">${{ data.indicators.MA20 }}</span></div>
+                    </div>
+
+                    <div class="prose prose-slate dark:prose-invert max-w-none text-sm leading-relaxed overflow-y-auto max-h-[180px]">
+                        {{ data.explanation | safe }}
+                    </div>
+                </div>
+            </div>
+
+            <div data-tilt data-tilt-max="2" class="bento-card md:col-span-2 bg-white/80 dark:bg-[#0f172a]/80 border rounded-2xl p-6 shadow-xl animate-fade-in-up delay-300">
+                <div class="pop-out">
+                    <h2 class="text-lg font-bold mb-4 flex items-center gap-2"><span>📈</span> Interactive Price Matrix</h2>
+                    <div class="w-full h-64 bg-slate-50 dark:bg-[#050810] rounded-xl border flex items-center justify-center relative shadow-inner p-2">
+                        <canvas id="priceChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <script>
+                document.addEventListener("DOMContentLoaded", function() {
+                    const ctx = document.getElementById('priceChart').getContext('2d');
+                    
+                    // Inject data from Flask/Python securely
+                    const labels = {{ data.chart_data.dates | tojson }};
+                    const prices = {{ data.chart_data.prices | tojson }};
+                    
+                    // Create a beautiful glowing gradient line
+                    let gradient = ctx.createLinearGradient(0, 0, 0, 300);
+                    gradient.addColorStop(0, 'rgba(59, 130, 246, 0.5)'); // Blue
+                    gradient.addColorStop(1, 'rgba(16, 185, 129, 0.0)'); // Emerald fade
+                    
+                    new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: 'Spot Price ($)',
+                                data: prices,
+                                borderColor: '#3b82f6',
+                                backgroundColor: gradient,
+                                borderWidth: 2,
+                                pointRadius: 0,
+                                pointHoverRadius: 6,
+                                fill: true,
+                                tension: 0.4 // Smooth curves
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: { legend: { display: false } },
+                            scales: {
+                                x: { display: false }, // Hide bottom labels for a clean look
+                                y: { grid: { color: 'rgba(255,255,255,0.05)' } }
+                            },
+                            interaction: { mode: 'index', intersect: false }
+                        }
+                    });
+                });
+            </script>
+
+            <div data-tilt data-tilt-max="2" class="bento-card bg-white/80 dark:bg-[#0f172a]/80 border rounded-2xl p-6 shadow-xl flex flex-col animate-fade-in-up delay-300">
+                <div class="pop-out h-full flex flex-col">
+                    {% if data.future %}
+                        <h2 class="text-lg font-bold mb-4 flex items-center gap-2"><span>📅</span> Growth Simulation</h2>
+                        <div class="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-700/50 rounded-xl p-4 mb-4 text-center">
+                            <p class="text-xs font-mono text-emerald-600 dark:text-emerald-400 uppercase">Est. Future Value</p>
+                            <p class="text-3xl font-black text-emerald-700 dark:text-emerald-300 mt-1">${{ data.future.future_value }}</p>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2 text-xs font-mono mb-4 text-slate-600 dark:text-slate-400">
+                            <div>Initial: <span class="font-bold text-slate-800 dark:text-white">${{ data.future.initial }}</span></div>
+                            <div>Years: <span class="font-bold text-slate-800 dark:text-white">{{ data.future.years }}</span></div>
+                            <div>CAGR: <span class="font-bold text-slate-800 dark:text-white">{{ data.future.cagr }}%</span></div>
+                        </div>
+                        <div class="text-sm italic text-slate-500 dark:text-slate-400 overflow-y-auto">{{ data.future.explanation }}</div>
+                    {% else %}
+                        <h2 class="text-lg font-bold mb-4 flex items-center gap-2"><span>📡</span> Data Stream</h2>
+                        <div class="flex-1 overflow-y-auto max-h-[250px] space-y-3">
+                            {% if data.sentiment == "No news available" %}
+                                <div class="text-slate-500 font-mono text-xs p-4 text-center border border-dashed rounded-lg">404: NO DATA</div>
+                            {% else %}
+                                {% for item in data.sentiment %}
+                                    <div class="bg-slate-50 dark:bg-[#050810]/80 p-3 rounded-lg border font-mono text-[11px] border-l-2 border-l-blue-500">
+                                        {{ item }}
+                                    </div>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <script>
+        function downloadPDF() {
+            // Temporarily hide buttons so they don't appear in the PDF
+            const headerButtons = document.querySelector('.no-print');
+            headerButtons.style.display = 'none';
+    
+            const element = document.body; // Capture the whole dashboard
+            const opt = {
+                margin:       0.5,
+                filename:     'Quantum_Quant_Analysis.pdf',
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true },
+                jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+            };
+    
+            // Generate PDF and restore buttons
+            html2pdf().set(opt).from(element).save().then(() => {
+                headerButtons.style.display = 'flex';
+            });
+        }
+        function executeTrade(stock, price) {
+            fetch('/paper_trade', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ stock: stock, price: price, shares: 10 }) // Defaults to buying 10 shares
+            })
+            .then(res => res.json())
+            .then(data => alert(data.message + " Check your Home Screen to see your portfolio!"));
+        }
+    </script>
+    <script> function toggleTheme() { const html = document.documentElement; html.classList.toggle('dark'); localStorage.setItem('theme', html.classList.contains('dark') ? 'dark' : 'light'); } </script>
+</body>
+</html>
