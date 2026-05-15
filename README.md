@@ -10,8 +10,6 @@ in config.py and .env you have to generate apis from below sites and then you pa
 2nd link -> https://newsapi.org/
 *****NOTE ends*****
 
-Watch this video to understand better -> https://youtu.be/OohtyJ73JFw
-
 This project is an **AI-powered Investment Intelligence Platform** built for the **ET AI Hackathon 2026**.
 
 It transforms raw stock market data into **actionable insights** using a **multi-agent AI system**, helping retail investors make smarter financial decisions.
